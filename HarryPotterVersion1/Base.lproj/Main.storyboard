@@ -40,6 +40,7 @@
                         <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                     </view>
                     <connections>
+                        <outlet property="animatedUIView" destination="3se-qz-xqx" id="1C6-zr-gcN"/>
                         <outlet property="myMircophoneButton" destination="5Vh-fn-6Bq" id="HBD-ND-gYB"/>
                         <outlet property="textView" destination="lCB-dp-u2N" id="D0m-pu-qCy"/>
                     </connections>

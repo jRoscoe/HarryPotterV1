@@ -19,6 +19,11 @@ import GameplayKit
 import Speech//
 
 class GameViewController: UIViewController , SFSpeechRecognizerDelegate {
+    /*for page curl*/
+      var tempUIView: UIView = UIView ()
+    @IBOutlet var animatedUIView: UIView!
+    /*end declarationfor page curl*/
+    
     
     @IBOutlet weak var textView: UITextView!//
     @IBOutlet weak var myMircophoneButton: UIButton!//
@@ -119,8 +124,21 @@ class GameViewController: UIViewController , SFSpeechRecognizerDelegate {
             if result != nil {
                 if result?.bestTranscription.formattedString == hello || result?.bestTranscription.formattedString == Hello{
                     self.textView.text="harry potter"
-                    // isFinal = (result?.isFinal)!
                     
+                    UIView.animate(withDuration: 1.0, animations: {
+                        let animation = CATransition()
+                        animation.duration = 1.2
+                        animation.startProgress = 0.0
+                        animation.endProgress = 0.6
+                        animation.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseOut)
+                        animation.type = "pageCurl"
+                        animation.subtype = "fromTop"
+                        animation.isRemovedOnCompletion = false
+                        animation.fillMode = "extended"
+                        self.animatedUIView.layer.add(animation, forKey: "pageFlipAnimation")
+                        self.animatedUIView.addSubview(self.tempUIView)
+                    })
+                   
                 }
                 else{
                     self.textView.text = result?.bestTranscription.formattedString//sets textview with string
@@ -176,6 +194,9 @@ class GameViewController: UIViewController , SFSpeechRecognizerDelegate {
             startRecording()
            myMircophoneButton.setTitle("Stop Recording", for: .normal)
         }
+        
+        
+        
         
         
     }
