@@ -8,82 +8,94 @@
 
 import SpriteKit
 import GameplayKit
+struct PhysicsCategory {
+    static let None : UInt32 = 0
+    static let All : UInt32 = UInt32.max
+    static let Monster : UInt32 = 0b1 //smallest number
+    static let Projectile : UInt32 = 0b10//second smallest number, this would beet monster bc larger
+}
 
-class GameScene: SKScene {
+
+class GameScene: SKScene, SKPhysicsContactDelegate {
     
-    private var label : SKLabelNode?
-    private var spinnyNode : SKShapeNode?
+    
+     let backgroundImage = SKSpriteNode(imageNamed: "hpquidbackground")
+    
+    let player = SKSpriteNode(imageNamed: "goldensnitch")
+  
     
     override func didMove(to view: SKView) {
+        backgroundColor = SKColor.white
+        player.size = CGSize(width: 144, height: 68)
         
-        // Get label node from scene and store it for use later
-        self.label = self.childNode(withName: "//helloLabel") as? SKLabelNode
-        if let label = self.label {
-            label.alpha = 0.0
-            label.run(SKAction.fadeIn(withDuration: 2.0))
+        player.position = CGPoint(x: frame.midX + (frame.midX/2), y: frame.midY + (frame.midY/1.70))
+       // player.position = CGPoint(x: size.width * 0.1, y: size.height * 0.5)//place ninja character at location
+        
+        
+        backgroundImage.size = CGSize(width: 627, height: 500)
+       backgroundImage.position = CGPoint(x: frame.midX, y: frame.midY)//place ninja character at location
+        
+        player.zPosition = 2//player is above background
+        addChild(backgroundImage)
+        addChild(player)//add ninja to scene
+        physicsWorld.gravity = CGVector.zero
+        physicsWorld.contactDelegate = self
+        
+        
+        /*  let backgroundMusic = SKAudioNode(fileNamed: "gameMusic.mp3")
+         backgroundMusic.autoplayLooped = true
+         addChild(backgroundMusic)*/
+    }
+    
+    //projectile functons
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?)//throwing star
+    {
+        //run(SKAction.playSoundFileNamed("pew.caf", waitForCompletion: false))
+        
+        
+        
+        guard let touch = touches.first else{ return }
+        let touchLocation = touch.location(in: self)
+        let projectile = SKSpriteNode(imageNamed: "goldensnitch")
+        
+        
+        
+        projectile.size = CGSize(width: 144, height: 68)
+        projectile.position = CGPoint(x: frame.midX + (frame.midX/2), y: frame.midY + (frame.midY/1.70))
+//place ninja character at location
+        
+         projectile.zPosition = 2
+        addChild(projectile)
+        player.removeFromParent()
+        
+        
+        projectile.physicsBody = SKPhysicsBody(circleOfRadius: projectile.size.width/1)
+        projectile.physicsBody?.isDynamic = true
+        projectile.physicsBody?.categoryBitMask = PhysicsCategory.Projectile
+        //projectile.physicsBody?.contactTestBitMask = PhysicsCategory.Monster
+        projectile.physicsBody?.collisionBitMask = PhysicsCategory.None
+        projectile.physicsBody?.usesPreciseCollisionDetection = true
+        
+        let offset = touchLocation - projectile.position
+        
+        
+        if (offset.x < 0)//won't throw behind ninja
+        {
+            return
         }
         
-        // Create shape node to use during mouse interaction
-        let w = (self.size.width + self.size.height) * 0.05
-        self.spinnyNode = SKShapeNode.init(rectOf: CGSize.init(width: w, height: w), cornerRadius: w * 0.3)
+        //addChild(projectile)
         
-        if let spinnyNode = self.spinnyNode {
-            spinnyNode.lineWidth = 2.5
-            
-            spinnyNode.run(SKAction.repeatForever(SKAction.rotate(byAngle: CGFloat(Double.pi), duration: 1)))
-            spinnyNode.run(SKAction.sequence([SKAction.wait(forDuration: 0.5),
-                                              SKAction.fadeOut(withDuration: 0.5),
-                                              SKAction.removeFromParent()]))
-        }
-    }
-    
-    
-    func touchDown(atPoint pos : CGPoint) {
-        if let n = self.spinnyNode?.copy() as! SKShapeNode? {
-            n.position = pos
-            n.strokeColor = SKColor.green
-            self.addChild(n)
-        }
-    }
-    
-    func touchMoved(toPoint pos : CGPoint) {
-        if let n = self.spinnyNode?.copy() as! SKShapeNode? {
-            n.position = pos
-            n.strokeColor = SKColor.blue
-            self.addChild(n)
-        }
-    }
-    
-    func touchUp(atPoint pos : CGPoint) {
-        if let n = self.spinnyNode?.copy() as! SKShapeNode? {
-            n.position = pos
-            n.strokeColor = SKColor.red
-            self.addChild(n)
-        }
-    }
-    
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let label = self.label {
-            label.run(SKAction.init(named: "Pulse")!, withKey: "fadeInOut")
-        }
         
-        for t in touches { self.touchDown(atPoint: t.location(in: self)) }
-    }
-    
-    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for t in touches { self.touchMoved(toPoint: t.location(in: self)) }
-    }
-    
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for t in touches { self.touchUp(atPoint: t.location(in: self)) }
-    }
-    
-    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for t in touches { self.touchUp(atPoint: t.location(in: self)) }
+        let direction = offset.normalized()
+        let shootAmount = direction * 1000
+        let realDest = shootAmount + projectile.position
+        let actionMove =  SKAction.move(to: realDest, duration: 2.0)//create movement of star
+        
+        let actionMoveDone = SKAction.removeFromParent()
+        
+        projectile.run(SKAction.sequence([actionMove, actionMoveDone]))
     }
     
     
-    override func update(_ currentTime: TimeInterval) {
-        // Called before each frame is rendered
-    }
 }
